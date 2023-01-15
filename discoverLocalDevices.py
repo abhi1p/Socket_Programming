@@ -71,7 +71,7 @@ class MyApp(QMainWindow, Ui_MainWindow):
 
         self.appIdInput.setPlaceholderText("Enter application ID (default: APP1)")
         self.appIdInput.textChanged.connect(self.set_application_id)
-        self.discoverBtn.clicked.connect(self.discover)
+        self.discoverBtn.clicked.connect(self.startDiscover)
         self.allowDiscoveryCheckbox.stateChanged.connect(self.setAllowDiscovery)
         self.sendBtn.clicked.connect(self.sendFileSelect)
         self.start.connect(self.getResponseAfterDiscoveryBroadcastStart)
@@ -132,7 +132,7 @@ class MyApp(QMainWindow, Ui_MainWindow):
             self.allowDiscovery = False
 
     def sendFileSelect(self):
-        if not self.connected:
+        if self.connected:
             fileDialog = QFileDialog()
             fileDialog.setFileMode(QFileDialog.AnyFile)
             self.path = fileDialog.getOpenFileNames(self, "Select one or more files to send", "", "All Files (*)")
@@ -210,7 +210,7 @@ class MyApp(QMainWindow, Ui_MainWindow):
         self.receiveHandshake()
 
     def receiveHandshake(self):
-        print("startReceiveHandshake")
+        # print("startReceiveHandshake")
         try:
             self.recvFile_conn, addr = self.soc4.accept()
             command = self.recvFile_conn.recv(1024).decode()
@@ -223,7 +223,7 @@ class MyApp(QMainWindow, Ui_MainWindow):
                 self.incomingTransfer.emit()
             # self.soc4.close()
         except socket.timeout:
-            print("timeout")
+            # print("timeout")
             if not self.exitApp:
                 self.receiveHandshake()
             self.soc4.close()
@@ -318,6 +318,10 @@ class MyApp(QMainWindow, Ui_MainWindow):
             print("Discovery response timeout")
             self.noResponseSignal.emit()
 
+    def startDiscover(self):
+        self.worker = Worker(self.discover)
+        self.threadpool.start(self.worker)
+
     def discover(self):  # send broadcast discovery request
         # only  if app is not responding to discovery request, means it is capable of sending discovery request
         # sending discovery request and discovery response are mutually exclusive
@@ -337,7 +341,8 @@ class MyApp(QMainWindow, Ui_MainWindow):
             msg = msg.encode()
             # Send a broadcast packet to the network
             self.sock1.sendto(msg, ("<broadcast>", self.bind_port))
-            self.start.emit()
+            # self.start.emit()
+            self.getResponseAfterDiscoveryBroadcast()
 
     def getResponseAfterDiscoveryBroadcastStart(self):  # get device details after sending discovery request
         self.worker = Worker(self.getResponseAfterDiscoveryBroadcast)
@@ -351,6 +356,7 @@ class MyApp(QMainWindow, Ui_MainWindow):
         count = 0
         # self.receiveStart.start(self.overflowDuration)
         # print("Timer is started: ", self.receiveStart.isActive())
+        self.messageDisplay.append("Started receiving")
         while True:
             try:
                 data, addr = self.sock1.recvfrom(1024)
