@@ -87,7 +87,7 @@ class MyApp(QMainWindow, Ui_MainWindow):
         self.notDiscoveredSignal.connect(self.notDiscovered)
         self.startDiscoveryResponseSignal.connect(self.DiscoveryResponse)
         self.noResponseSignal.connect(self.noResponse)
-        self.startReceivingCapability1.connect(self.receiveHandshakeStart)
+        self.startReceivingCapability1.connect(self.receiveHandshake)
         self.startReceivingCapability2.connect(self.startReceiveHandshake)
         self.transferDialog.startBtnClicked.connect(self.startReceiving)
         self.transferDialog.cancelBtnClicked.connect(self.cancelTransferStart)
@@ -225,29 +225,23 @@ class MyApp(QMainWindow, Ui_MainWindow):
         self.soc4.settimeout(2)
         self.soc4.listen(1)
         self.establishConnectionStart.emit()
-        self.receiveHandshakeStart()
+        self.receiveHandshakeStart1()
 
-    def receiveHandshakeStart(self):
-        worker = Worker(self.receiveHandshake)
+    def receiveHandshakeStart1(self):
+        worker = Worker(self.receiveHandshakeStart2)
         self.threadpool.start(worker)
 
-    def receiveHandshake(self):
-        # print("startReceiveHandshake")
+    def receiveHandshakeStart2(self):
+        self.acceptConnection()
+        self.receiveHandshake()
+
+    def acceptConnection(self):
         try:
             self.recvFile_conn, addr = self.soc4.accept()
-            command = self.recvFile_conn.recv(1024).decode()
-            cmd1, self.fileRecvCount, temp = command.split(":")
-            fileNames = temp.split(";")
-            if cmd1 == "File_transfer_request":
-                print("command: ", command)
-                for i in fileNames:
-                    self.transferDialog.incomingTransferList.addItem(i)
-                self.incomingTransfer.emit()
-            # self.soc4.close()
         except socket.timeout:
             # print("timeout")
             if not self.exitApp:
-                self.receiveHandshake()
+                self.acceptConnection()
             self.soc4.close()
         except Exception as e:
             # Get the traceback as a string
@@ -256,6 +250,18 @@ class MyApp(QMainWindow, Ui_MainWindow):
             print(tb_str)
             line_number = tb_str[-2].split(',')[1]
             print(f'Error occurred on line {line_number}')
+
+    def receiveHandshake(self):
+        # print("startReceiveHandshake")
+        command = self.recvFile_conn.recv(1024).decode()
+        cmd1, self.fileRecvCount, temp = command.split(":")
+        fileNames = temp.split(";")
+        if cmd1 == "File_transfer_request":
+            print("command: ", command)
+            for i in fileNames:
+                self.transferDialog.incomingTransferList.addItem(i)
+            self.incomingTransfer.emit()
+            # self.soc4.close()
 
     def startReceiving(self):
         worker = Worker(self.receive)
