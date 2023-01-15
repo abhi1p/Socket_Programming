@@ -73,7 +73,7 @@ class MyApp(QMainWindow, Ui_MainWindow):
         self.startReceivingCapability.connect(self.startReceiveHandshake)
         self.transferDialog.startBtnClicked.connect(self.startTransfer)
         self.transferDialog.cancelBtnClicked.connect(self.cancelTransfer)
-        self.incomingTransfer.connect(lambda x: self.transferDialog.exec_())
+        self.incomingTransfer.connect(lambda: self.transferDialog.exec_())
         # self.transferDialog.
 
     # def initUI(self):
@@ -182,10 +182,22 @@ class MyApp(QMainWindow, Ui_MainWindow):
         self.soc4.close()
 
     def startTransfer(self):
+        # get selected files from transferDialog
+        selectedFiles1 = []
+        temp = []
+        for i in range(self.transferDialog.incomingTransferList.count()):
+            temp.append(self.transferDialog.incomingTransferList.item(i).text())
+            if self.transferDialog.incomingTransferList.item(i).isSelected():
+                selectedFiles1.append(self.transferDialog.incomingTransferList.item(i).text())
+        if len(selectedFiles1) == 0:
+            selectedFiles1 = temp
+        print("selectedFiles1: ", selectedFiles1)
+
         print("startTransfer")
 
     def cancelTransfer(self):
         print("cancelTransfer")
+        self.startReceivingCapability.emit()
 
     def set_application_id(self, text):
         self.application_id = text
