@@ -62,8 +62,8 @@ class MyApp(QMainWindow, Ui_MainWindow):
         self.discoveredDevices = []
         self.discovery = False
         self.connected = False
-        self.bind_port = 5355
-        self.data_transfer_port = 5356
+        self.bind_port = 5000
+        self.data_transfer_port = 5355
         self.receiveStart = QTimer()
         # self.receiveStart.timeout.connect(self.timeOverflow)
         self.receiveStart.setSingleShot(True)
@@ -166,7 +166,7 @@ class MyApp(QMainWindow, Ui_MainWindow):
 
     def establishConnection(self):
         try:
-            self.soc3.connect(self.discoveredDevices[-1][1])
+            self.soc3.connect(self.discoveredDevices[-1][1][0], self.data_transfer_port)
             self.connected = True
             self.messageDisplay.append("Connected to " + self.discoveredDevices[-1][1][0])
         except Exception as e:
@@ -207,8 +207,8 @@ class MyApp(QMainWindow, Ui_MainWindow):
     def sendFile(self, file):
         size = os.path.getsize(file)
         fileName = file.split("/")[-1]
-        self.soc3.sendall(fileName.encode())  # send file name
-        self.soc3.sendall(str(size).encode())  # send file size
+        self.soc3.senda(fileName.encode())  # send file name
+        self.soc3.senda(str(size).encode())  # send file size
         with open(file, "rb") as f:
             c = 0
             while c <= size:
@@ -221,7 +221,7 @@ class MyApp(QMainWindow, Ui_MainWindow):
     def startReceiveHandshake(self):
         # ip = self.discoveredDevices[-1][1][0]
         self.soc4 = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        self.soc4.bind((self.selfIP, self.bind_port))
+        self.soc4.bind((self.selfIP, self.data_transfer_port))
         self.soc4.settimeout(2)
         self.soc4.listen(1)
         self.establishConnectionStart.emit()
