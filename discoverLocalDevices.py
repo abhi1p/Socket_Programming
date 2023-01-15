@@ -7,6 +7,8 @@ from PyQt5.QtWidgets import QMainWindow, QPushButton, QTextEdit, QWidget, QVBoxL
     QHBoxLayout, QLabel, QFileDialog
 
 from PyQt5.QtCore import QRunnable, QObject, pyqtSignal
+
+from customWidgets import Dialog
 from gui import Ui_MainWindow
 
 
@@ -38,6 +40,7 @@ class MyApp(QMainWindow, Ui_MainWindow):
     startDiscoveryResponseSignal = pyqtSignal()
     noResponseSignal = pyqtSignal()
     startReceivingCapability = pyqtSignal()
+    incomingTransfer = pyqtSignal()
 
     def __init__(self):
         super(MyApp, self).__init__()
@@ -55,6 +58,7 @@ class MyApp(QMainWindow, Ui_MainWindow):
         self.overflowDuration = 5000
         self.threadpool = QThreadPool()
         self.allowDiscovery = False
+        self.transferDialog = Dialog(self)
 
         self.appIdInput.setPlaceholderText("Enter application ID (default: APP1)")
         self.appIdInput.textChanged.connect(self.set_application_id)
@@ -67,6 +71,8 @@ class MyApp(QMainWindow, Ui_MainWindow):
         self.startDiscoveryResponseSignal.connect(self.DiscoveryResponse)
         self.noResponseSignal.connect(self.noResponse)
         self.startReceivingCapability.connect(self.startReceiveHandshake)
+        self.transferDialog.startBtn.clicked.connect(self.startTransfer)
+        # self.transferDialog.
 
     # def initUI(self):
     #     self.setWindowTitle("SMS1")
@@ -115,17 +121,19 @@ class MyApp(QMainWindow, Ui_MainWindow):
             self.allowDiscovery = False
 
     def sendFileSelect(self):
-        fileDialog = QFileDialog()
-        fileDialog.setFileMode(QFileDialog.AnyFile)
-        path = fileDialog.getOpenFileNames(self, "Select one or more files to send", "", "All Files (*)")
-        if path[1]:
-            print(path)
-            fileNames = []
-            for i in path[0]:
-                temp = i.split("/")
-                print(temp[-1])
-                fileNames.append(temp[-1])
-            self.sendFileWorkerStart(fileNames)
+        if self.connected:
+            fileDialog = QFileDialog()
+            fileDialog.setFileMode(QFileDialog.AnyFile)
+            path = fileDialog.getOpenFileNames(self, "Select one or more files to send", "", "All Files (*)")
+            if path[1]:
+                print(path)
+                fileNames = []
+                for i in path[0]:
+                    temp = i.split("/")
+                    print(temp[-1])
+                    fileNames.append(temp[-1])
+                    self.selectedFileListWidget.addItem(temp[-1])
+                self.sendFileWorkerStart(fileNames)
 
     def sendFileWorkerStart(self, fileNames):
         self.worker = Worker(self.sendFileStart, fileNames)
@@ -162,8 +170,18 @@ class MyApp(QMainWindow, Ui_MainWindow):
         self.soc4.listen(1)
         conn, addr = self.soc4.accept()
         command = conn.recv(1024).decode()
-        print("command: ", command)
+        cmd1, fileCount, temp = command.split(":")
+        fileNames = temp.split(";")
+        if cmd1 == "File_transfer_request":
+            print("command: ", command)
+            for i in fileNames:
+                self.transferDialog.incomingTransferList.addItem(i)
+            self.transferDialog.exec_()
+            # self.incomingTransfer.emit()
         self.soc4.close()
+
+    def startTransfer(self):
+        print("startTransfer")
 
     def set_application_id(self, text):
         self.application_id = text
@@ -292,7 +310,8 @@ class MyApp(QMainWindow, Ui_MainWindow):
         print("Device name: ", deviceName)
         # self.connected_device.setText(deviceName)
         self.coonectedDeviceDisplay.setText(deviceName)
-        self.startReceivingCapability.emit()
+        self.connected = True
+        # self.startReceivingCapability.emit()
 
     def notDiscovered(self):
         self.messageDisplay.append("Not discovered any device")

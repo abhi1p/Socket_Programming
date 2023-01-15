@@ -55,9 +55,6 @@
         </property>
        </widget>
       </item>
-      <item row="3" column="0" colspan="2">
-       <widget class="QListView" name="selectedFileListView"/>
-      </item>
       <item row="3" column="2">
        <widget class="QPushButton" name="sendBtn">
         <property name="text">
@@ -67,6 +64,9 @@
       </item>
       <item row="4" column="0" colspan="3">
        <widget class="QTextEdit" name="messageDisplay"/>
+      </item>
+      <item row="3" column="0" colspan="2">
+       <widget class="QListWidget" name="selectedFileListWidget"/>
       </item>
      </layout>
     </item>
