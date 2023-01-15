@@ -349,7 +349,7 @@ class MyApp(QMainWindow, Ui_MainWindow):
             # Create a UDP socket
             self.sock1 = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
             # Allow reuse of the socket
-            # self.sock1.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+            self.sock1.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
             # Set the socket to allow broadcast packets
             self.sock1.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1)
 
@@ -439,10 +439,10 @@ class MyApp(QMainWindow, Ui_MainWindow):
     def closeEvent(self, a0: QtGui.QCloseEvent) -> None:
         # self.sock.close()
         self.exitApp = True
-        self.sock1.close()
-        self.sock2.close()
-        self.soc3.close()
-        self.soc4.close()
+        # self.sock1.close()
+        # self.sock2.close()
+        # self.soc3.close()
+        # self.soc4.close()
         self.threadpool.waitForDone()
         self.threadpool.clear()
         self.close()
