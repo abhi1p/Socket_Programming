@@ -16,11 +16,11 @@ class Dialog(QDialog, Ui_transferDialog):
 
     def start(self):
         self.startBtnClicked.emit()
-        self.close()
+        self.accept()
 
     def cancel(self):
         self.cancelBtnClicked.emit()
-        self.close()
+        self.rejected()
 
 
 if __name__ == '__main__':
