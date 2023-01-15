@@ -253,14 +253,21 @@ class MyApp(QMainWindow, Ui_MainWindow):
 
     def receiveHandshake(self):
         # print("startReceiveHandshake")
-        command = self.recvFile_conn.recv(1024).decode()
-        cmd1, self.fileRecvCount, temp = command.split(":")
-        fileNames = temp.split(";")
-        if cmd1 == "File_transfer_request":
-            print("command: ", command)
-            for i in fileNames:
-                self.transferDialog.incomingTransferList.addItem(i)
-            self.incomingTransfer.emit()
+        try:
+            command = self.recvFile_conn.recv(1024).decode()
+            cmd1, self.fileRecvCount, temp = command.split(":")
+            fileNames = temp.split(";")
+            if cmd1 == "File_transfer_request":
+                print("command: ", command)
+                for i in fileNames:
+                    self.transferDialog.incomingTransferList.addItem(i)
+                self.incomingTransfer.emit()
+        except socket.error as e:
+            if "abort" in str(e):
+                print("Connection aborted")
+            else:
+                raise e
+
             # self.soc4.close()
 
     def startReceiving(self):
@@ -463,7 +470,7 @@ class MyApp(QMainWindow, Ui_MainWindow):
         # self.sock.close()
         self.exitApp = True
         try:
-            self.recvFile_conn.shutdown(socket.SHUT_RDWR)
+            self.recvFile_conn.close()
         except:
             pass
 
