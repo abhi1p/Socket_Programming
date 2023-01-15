@@ -47,7 +47,7 @@ class MyApp(QMainWindow, Ui_MainWindow):
         self.discoveredDevices = []
         self.connected = False
         self.bind_port = 5355
-        self.response_bind_port = 5356
+        self.data_transfer_port = 5356
         self.receiveStart = QTimer()
         # self.receiveStart.timeout.connect(self.timeOverflow)
         self.receiveStart.setSingleShot(True)
@@ -153,7 +153,8 @@ class MyApp(QMainWindow, Ui_MainWindow):
     def startReceiveHandshake(self):
         print("startReceiveHandshake")
         self.soc4 = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        self.soc4.bind(self.discoveredDevices[-1][1])
+        ip = self.discoveredDevices[-1][1][0]
+        self.soc4.bind((ip, self.data_transfer_port))
         self.soc4.listen(1)
         conn, addr = self.soc4.accept()
         command = conn.recv(1024).decode()
