@@ -31,14 +31,11 @@ class Worker(QRunnable):
             result = self.fun(*self.args, **self.kwargs)
             # self.signals.finished.emit(result)
         except Exception as e:
-            # Get the traceback as a string
-            tb_str = traceback.format_exception(etype=type(e), value=e, tb=e.__traceback__)
-            try:
-                # Extract the line number from the traceback string
-                line_number = int(tb_str[-2].split(',')[1])
-                print(f'Error occurred on line {line_number}')
-            except ValueError:
-                print("Line number information not available.")
+        # Get the traceback as a string
+            tb_str = traceback.format_exception(*sys.exc_info())
+            # Extract the line number from the traceback string
+            line_number = int(tb_str[-2].split(',')[1])
+            print(f'Error occurred on line {line_number}')
 
 
 class MyApp(QMainWindow, Ui_MainWindow):
@@ -236,7 +233,7 @@ class MyApp(QMainWindow, Ui_MainWindow):
             self.soc4.close()
         except Exception as e:
             # Get the traceback as a string
-            tb_str = traceback.format_exception(etype=type(e), value=e, tb=e.__traceback__)
+            tb_str = traceback.format_exception(*sys.exc_info())
             # Extract the line number from the traceback string
             line_number = int(tb_str[-2].split(',')[1])
             print(f'Error occurred on line {line_number}')
@@ -332,7 +329,7 @@ class MyApp(QMainWindow, Ui_MainWindow):
             self.noResponseSignal.emit()
         except Exception as e:
             # Get the traceback as a string
-            tb_str = traceback.format_exception(etype=type(e), value=e, tb=e.__traceback__)
+            tb_str = traceback.format_exception(*sys.exc_info())
             # Extract the line number from the traceback string
             line_number = int(tb_str[-2].split(',')[1])
             print(f'Error occurred on line {line_number}')
@@ -402,7 +399,7 @@ class MyApp(QMainWindow, Ui_MainWindow):
                 break
             except Exception as e:
                 # Get the traceback as a string
-                tb_str = traceback.format_exception(etype=type(e), value=e, tb=e.__traceback__)
+                tb_str = traceback.format_exception(*sys.exc_info())
                 # Extract the line number from the traceback string
                 line_number = int(tb_str[-2].split(',')[1])
                 print(f'Error occurred on line {line_number}')
