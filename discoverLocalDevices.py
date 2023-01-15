@@ -230,7 +230,7 @@ class MyApp(QMainWindow, Ui_MainWindow):
             # print("timeout")
             if not self.exitApp:
                 self.receiveHandshake()
-            self.soc4.close()
+            # self.soc4.close()
         except Exception as e:
             # Get the traceback as a string
             tb_str = traceback.format_exception(*sys.exc_info())
@@ -431,6 +431,10 @@ class MyApp(QMainWindow, Ui_MainWindow):
     def closeEvent(self, a0: QtGui.QCloseEvent) -> None:
         # self.sock.close()
         self.exitApp = True
+        self.sock1.close()
+        self.sock2.close()
+        self.soc3.close()
+        self.soc4.close()
         self.threadpool.waitForDone()
         self.threadpool.clear()
         self.close()
