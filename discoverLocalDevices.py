@@ -73,6 +73,7 @@ class MyApp(QMainWindow, Ui_MainWindow):
         self.startReceivingCapability.connect(self.startReceiveHandshake)
         self.transferDialog.startBtnClicked.connect(self.startTransfer)
         self.transferDialog.cancelBtnClicked.connect(self.cancelTransfer)
+        self.incomingTransfer.connect(lambda x: self.transferDialog.exec_())
         # self.transferDialog.
 
     # def initUI(self):
@@ -177,8 +178,7 @@ class MyApp(QMainWindow, Ui_MainWindow):
             print("command: ", command)
             for i in fileNames:
                 self.transferDialog.incomingTransferList.addItem(i)
-            self.transferDialog.exec_()
-            # self.incomingTransfer.emit()
+            self.incomingTransfer.emit()
         self.soc4.close()
 
     def startTransfer(self):
