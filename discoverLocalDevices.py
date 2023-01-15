@@ -34,7 +34,7 @@ class Worker(QRunnable):
         # Get the traceback as a string
             tb_str = traceback.format_exception(*sys.exc_info())
             # Extract the line number from the traceback string
-            line_number = int(tb_str[-2].split(',')[1])
+            line_number = tb_str[-2].split(',')[1]
             print(f'Error occurred on line {line_number}')
 
 
@@ -235,7 +235,7 @@ class MyApp(QMainWindow, Ui_MainWindow):
             # Get the traceback as a string
             tb_str = traceback.format_exception(*sys.exc_info())
             # Extract the line number from the traceback string
-            line_number = int(tb_str[-2].split(',')[1])
+            line_number = tb_str[-2].split(',')[1]
             print(f'Error occurred on line {line_number}')
 
     def startReceiving(self):
@@ -331,7 +331,7 @@ class MyApp(QMainWindow, Ui_MainWindow):
             # Get the traceback as a string
             tb_str = traceback.format_exception(*sys.exc_info())
             # Extract the line number from the traceback string
-            line_number = int(tb_str[-2].split(',')[1])
+            line_number = tb_str[-2].split(',')[1]
             print(f'Error occurred on line {line_number}')
 
     def startDiscover(self):
@@ -401,7 +401,7 @@ class MyApp(QMainWindow, Ui_MainWindow):
                 # Get the traceback as a string
                 tb_str = traceback.format_exception(*sys.exc_info())
                 # Extract the line number from the traceback string
-                line_number = int(tb_str[-2].split(',')[1])
+                line_number = tb_str[-2].split(',')[1]
                 print(f'Error occurred on line {line_number}')
 
     def timeOverflow(self):
