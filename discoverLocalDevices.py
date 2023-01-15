@@ -73,7 +73,7 @@ class MyApp(QMainWindow, Ui_MainWindow):
         self.allowDiscovery = False
         self.transferDialog = Dialog(self)
         self.exitApp = False
-        self.fileRecvCount = 0
+        self.fileRecvCount = "0"
         self.recvDirectory = "E:/Development/Socket_Programming/Recv/"
         self.selfIP = socket.gethostbyname(socket.gethostname())
 
@@ -263,7 +263,7 @@ class MyApp(QMainWindow, Ui_MainWindow):
                     self.transferDialog.incomingTransferList.addItem(i)
                 self.incomingTransfer.emit()
         except socket.error as e:
-            if "abort" in str(e):
+            if "abort" in str(e) or "closed" in str(e):
                 print("Connection aborted")
             else:
                 raise e
@@ -291,7 +291,7 @@ class MyApp(QMainWindow, Ui_MainWindow):
         self.recvFile_conn.sendall("File_transfer_Accepted".encode())
         print("startTransfer")
         self.messageDisplay.append("File transfer started")
-        for i in range(self.fileRecvCount):
+        for i in range(int(self.fileRecvCount)):
             self.receiveFile()
         self.messageDisplay.append("File transfer completed")
 
