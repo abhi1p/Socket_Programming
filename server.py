@@ -1,7 +1,7 @@
 import socket
 
 soc = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-soc.bind(("192.168.1.116", 5000))
+soc.bind(("192.168.1.116", 5355))
 soc.listen()
 print("test")
 con, addr = soc.accept()

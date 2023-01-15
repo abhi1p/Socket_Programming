@@ -154,7 +154,7 @@ class MyApp(QMainWindow, Ui_MainWindow):
         print("startReceiveHandshake")
         self.soc4 = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         ip = self.discoveredDevices[-1][1][0]
-        self.soc4.bind((ip, self.data_transfer_port))
+        self.soc4.bind((ip, 5000))
         self.soc4.listen(1)
         conn, addr = self.soc4.accept()
         command = conn.recv(1024).decode()
