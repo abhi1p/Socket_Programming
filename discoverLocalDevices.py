@@ -292,7 +292,7 @@ class MyApp(QMainWindow, Ui_MainWindow):
         print("Device name: ", deviceName)
         # self.connected_device.setText(deviceName)
         self.coonectedDeviceDisplay.setText(deviceName)
-        # self.startReceivingCapability.emit()
+        self.startReceivingCapability.emit()
 
     def notDiscovered(self):
         self.messageDisplay.append("Not discovered any device")
