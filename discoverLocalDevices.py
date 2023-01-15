@@ -462,6 +462,11 @@ class MyApp(QMainWindow, Ui_MainWindow):
     def closeEvent(self, a0: QtGui.QCloseEvent) -> None:
         # self.sock.close()
         self.exitApp = True
+        try:
+            self.recvFile_conn.shutdown(socket.SHUT_RDWR)
+        except:
+            pass
+
         # self.sock1.close()
         # self.sock2.close()
         # self.soc3.close()
