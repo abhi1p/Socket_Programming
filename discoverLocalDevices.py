@@ -207,8 +207,8 @@ class MyApp(QMainWindow, Ui_MainWindow):
     def sendFile(self, file):
         size = os.path.getsize(file)
         fileName = file.split("/")[-1]
-        self.soc3.send(fileName.encode())  # send file name
-        self.soc3.send(str(size).encode())  # send file size
+        self.soc3.sendall(fileName.encode())  # send file name
+        self.soc3.sendall(str(size).encode())  # send file size
         with open(file, "rb") as f:
             c = 0
             while c <= size:
