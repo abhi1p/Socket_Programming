@@ -1,3 +1,4 @@
+import os
 import socket
 import sys
 
@@ -44,6 +45,11 @@ class MyApp(QMainWindow, Ui_MainWindow):
 
     def __init__(self):
         super(MyApp, self).__init__()
+        self.path = []
+        self.sock1 = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        self.sock2 = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        self.soc4 = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        self.soc3 = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.application_id = "APP1"
         self.setupUi(self)
         # self.initUI()
@@ -60,6 +66,8 @@ class MyApp(QMainWindow, Ui_MainWindow):
         self.allowDiscovery = False
         self.transferDialog = Dialog(self)
         self.exitApp = False
+        self.fileRecvCount = 0
+        self.recvDirectory = "E:/Development/Socket_Programming/Recv/"
 
         self.appIdInput.setPlaceholderText("Enter application ID (default: APP1)")
         self.appIdInput.textChanged.connect(self.set_application_id)
@@ -72,8 +80,8 @@ class MyApp(QMainWindow, Ui_MainWindow):
         self.startDiscoveryResponseSignal.connect(self.DiscoveryResponse)
         self.noResponseSignal.connect(self.noResponse)
         self.startReceivingCapability.connect(self.startReceiveHandshake)
-        self.transferDialog.startBtnClicked.connect(self.startTransfer)
-        self.transferDialog.cancelBtnClicked.connect(self.cancelTransfer)
+        self.transferDialog.startBtnClicked.connect(self.startReceiving)
+        self.transferDialog.cancelBtnClicked.connect(self.cancelTransferStart)
         self.incomingTransfer.connect(lambda: self.transferDialog.exec_())
         # self.transferDialog.
 
@@ -124,14 +132,14 @@ class MyApp(QMainWindow, Ui_MainWindow):
             self.allowDiscovery = False
 
     def sendFileSelect(self):
-        if self.connected:
+        if not self.connected:
             fileDialog = QFileDialog()
             fileDialog.setFileMode(QFileDialog.AnyFile)
-            path = fileDialog.getOpenFileNames(self, "Select one or more files to send", "", "All Files (*)")
-            if path[1]:
-                print(path)
+            self.path = fileDialog.getOpenFileNames(self, "Select one or more files to send", "", "All Files (*)")
+            if self.path[1]:
+                print(self.path)
                 fileNames = []
-                for i in path[0]:
+                for i in self.path[0]:
                     temp = i.split("/")
                     print(temp[-1])
                     fileNames.append(temp[-1])
@@ -148,7 +156,6 @@ class MyApp(QMainWindow, Ui_MainWindow):
 
     def startSendHandshake(self, fileNames):
         print("startHandshake")
-        self.soc3 = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.soc3.connect(self.discoveredDevices[-1][1])
 
         command1 = "File_transfer_request"
@@ -158,53 +165,122 @@ class MyApp(QMainWindow, Ui_MainWindow):
         print("command: ", command)
         temp = command.encode()
         self.soc3.sendall(temp)
-        # print(temp.__sizeof__())
-        # self.soc3.send(.encode())
+        command = self.soc3.recv(1024).decode()
+        # cmd1, fileCount, temp = command.split(":")
+        # fileNames = temp.split(";")
+        if command == "File_transfer_Accepted":
+            self.messageDisplay.append("File transfer started")
+            self.send()
+            print("File transfer started")
+            self.soc3.close()
+        elif command == "File_transfer_Reject":
+            self.messageDisplay.append("File transfer rejected")
+            self.soc3.close()
+
+    # print(temp.__sizeof__())
+    # self.soc3.send(.encode())
+    def send(self):
+        print("send")
+        for file in self.path[0]:
+            self.sendFile(file)
+
+    def sendFile(self, file):
+        size = os.path.getsize(file)
+        fileName = file.split("/")[-1]
+        self.soc3.send(fileName.encode())  # send file name
+        self.soc3.send(str(size).encode())  # send file size
+        with open(file, "rb") as f:
+            c = 0
+            while c <= size:
+                data = f.read(1024)
+                if not data:
+                    break
+                self.soc3.sendall(data)
+                c += len(data)
 
     def startReceiveHandshake(self):
-        worker = Worker(self.receiveHandshake)
+        worker = Worker(self.receiveHandshakeStart)
         self.threadpool.start(worker)
+
+    def receiveHandshakeStart(self):
+        # ip = self.discoveredDevices[-1][1][0]
+        self.soc4.bind((socket.gethostbyname(socket.gethostname()), self.bind_port))
+        self.soc4.settimeout(2)
+        self.soc4.listen(1)
+        self.receiveHandshake()
 
     def receiveHandshake(self):
         print("startReceiveHandshake")
         try:
-            self.soc4 = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-            # ip = self.discoveredDevices[-1][1][0]
-            self.soc4.bind((socket.gethostbyname(socket.gethostname()), self.bind_port))
-            self.soc4.settimeout(2)
-            self.soc4.listen(1)
-            conn, addr = self.soc4.accept()
-            command = conn.recv(1024).decode()
-            cmd1, fileCount, temp = command.split(":")
+            self.recvFile_conn, addr = self.soc4.accept()
+            command = self.recvFile_conn.recv(1024).decode()
+            cmd1, self.fileRecvCount, temp = command.split(":")
             fileNames = temp.split(";")
             if cmd1 == "File_transfer_request":
                 print("command: ", command)
                 for i in fileNames:
                     self.transferDialog.incomingTransferList.addItem(i)
                 self.incomingTransfer.emit()
-            self.soc4.close()
+            # self.soc4.close()
         except socket.timeout:
             print("timeout")
             if not self.exitApp:
-                self.startReceiveHandshake()
+                self.receiveHandshake()
             self.soc4.close()
 
-    def startTransfer(self):
-        # get selected files from transferDialog
-        selectedFiles1 = []
-        temp = []
-        for i in range(self.transferDialog.incomingTransferList.count()):
-            temp.append(self.transferDialog.incomingTransferList.item(i).text())
-            if self.transferDialog.incomingTransferList.item(i).isSelected():
-                selectedFiles1.append(self.transferDialog.incomingTransferList.item(i).text())
-        if len(selectedFiles1) == 0:
-            selectedFiles1 = temp
-        print("selectedFiles1: ", selectedFiles1)
+    def startReceiving(self):
+        worker = Worker(self.receive)
+        self.threadpool.start(worker)
 
+    # def replyTransferList(self):
+    # get selected files from transferDialog
+    # selectedFiles1 = []
+    # temp = []
+    # for i in range(self.transferDialog.incomingTransferList.count()):
+    #     temp.append(self.transferDialog.incomingTransferList.item(i).text())
+    #     if self.transferDialog.incomingTransferList.item(i).isSelected():
+    #         selectedFiles1.append(self.transferDialog.incomingTransferList.item(i).text())
+    # if len(selectedFiles1) == 0:
+    #     selectedFiles1 = temp
+    # print("selectedFiles1: ", selectedFiles1)
+    # self.receive()
+
+    def receive(self):
+        self.recvFile_conn.sendall("File_transfer_Accepted".encode())
         print("startTransfer")
+        self.messageDisplay.append("File transfer started")
+        for i in range(self.fileRecvCount):
+            self.receiveFile()
+        self.messageDisplay.append("File transfer completed")
+
+    def receiveFile(self):
+        fileName = self.recvFile_conn.recv(1024).decode()
+        fileSize = int(self.recvFile_conn.recv(1024).decode())
+        print("fileName: ", fileName)
+        print("fileSize: ", fileSize)
+        with open(self.recvDirectory + fileName, "wb") as f:
+            c = 0
+            while c <= fileSize:
+                data = self.recvFile_conn.recv(1024)
+                if not data:
+                    break
+                f.write(data)
+                c += len(data)
+
+    # def replyWithTransferList(self, fileNames):
+    #     command1 = "File_transfer_Accepted"
+    #     # command2 = f":{len(fileNames)}:"
+    #     # command3 = ";".join(fileNames)
+    #     # command = command1 + command2 + command3
+    #     self.recvFile_conn.sendall(command1.encode())
+
+    def cancelTransferStart(self):
+        print("cancelTransfer")
+        worker = Worker(self.cancelTransfer)
+        self.threadpool.start(worker)
 
     def cancelTransfer(self):
-        print("cancelTransfer")
+        self.recvFile_conn.sendall("File_transfer_Reject".encode())
         self.startReceivingCapability.emit()
 
     def set_application_id(self, text):
@@ -218,7 +294,6 @@ class MyApp(QMainWindow, Ui_MainWindow):
             self.threadpool.start(self.worker)
 
     def startDiscoveryResponse(self):
-        self.sock2 = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         # Allow reuse of the socket
         self.sock2.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
         # Set the socket to allow broadcast packets
@@ -243,30 +318,11 @@ class MyApp(QMainWindow, Ui_MainWindow):
             print("Discovery response timeout")
             self.noResponseSignal.emit()
 
-    def discover2(self):
-        interfaces = socket.getaddrinfo(host=socket.gethostname(), port=None, family=socket.AF_INET)
-        allips = [ip[-1][0] for ip in interfaces]
-
-        msg = b"Hello, network!"
-        # self.start.emit()
-        while True:
-
-            # for ip in allips:
-            for i in range(1):
-                # print(f'sending on {ip}')
-                self.sock1 = socket.socket(socket.AF_INET, socket.SOCK_DGRAM, socket.IPPROTO_UDP)  # UDP
-                self.sock1.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1)
-                self.sock1.bind(("192.168.1.116", 0))
-                self.sock1.sendto(msg, ("<broadcast>", 5355))
-                # sock.close()
-            break
-
     def discover(self):  # send broadcast discovery request
         # only  if app is not responding to discovery request, means it is capable of sending discovery request
         # sending discovery request and discovery response are mutually exclusive
         if not self.allowDiscovery:
             # Create a UDP socket
-            self.sock1 = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
             # Allow reuse of the socket
             self.sock1.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
             # Set the socket to allow broadcast packets
