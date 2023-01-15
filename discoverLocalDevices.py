@@ -13,6 +13,7 @@ from customWidgets import Dialog
 from gui import Ui_MainWindow
 import traceback
 
+
 class Signals(QObject):
     finished = pyqtSignal(tuple)
 
@@ -31,11 +32,12 @@ class Worker(QRunnable):
             result = self.fun(*self.args, **self.kwargs)
             # self.signals.finished.emit(result)
         except Exception as e:
-        # Get the traceback as a string
+            # Get the traceback as a string
             tb_str = traceback.format_exception(*sys.exc_info())
             # Extract the line number from the traceback string
-            line_number = tb_str[-2].split(',')[1]
-            print(f'Error occurred on line {line_number}')
+            print(tb_str)
+            # line_number = tb_str[-2].split(',')[1]
+            # print(f'Error occurred on line {line_number}')
 
 
 class MyApp(QMainWindow, Ui_MainWindow):
@@ -235,8 +237,9 @@ class MyApp(QMainWindow, Ui_MainWindow):
             # Get the traceback as a string
             tb_str = traceback.format_exception(*sys.exc_info())
             # Extract the line number from the traceback string
-            line_number = tb_str[-2].split(',')[1]
-            print(f'Error occurred on line {line_number}')
+            print(tb_str)
+            # line_number = tb_str[-2].split(',')[1]
+            # print(f'Error occurred on line {line_number}')
 
     def startReceiving(self):
         worker = Worker(self.receive)
@@ -331,8 +334,9 @@ class MyApp(QMainWindow, Ui_MainWindow):
             # Get the traceback as a string
             tb_str = traceback.format_exception(*sys.exc_info())
             # Extract the line number from the traceback string
-            line_number = tb_str[-2].split(',')[1]
-            print(f'Error occurred on line {line_number}')
+            print(tb_str)
+            # line_number = tb_str[-2].split(',')[1]
+            # print(f'Error occurred on line {line_number}')
 
     def startDiscover(self):
         self.worker = Worker(self.discover)
@@ -401,6 +405,7 @@ class MyApp(QMainWindow, Ui_MainWindow):
                 # Get the traceback as a string
                 tb_str = traceback.format_exception(*sys.exc_info())
                 # Extract the line number from the traceback string
+                print(tb_str)
                 line_number = tb_str[-2].split(',')[1]
                 print(f'Error occurred on line {line_number}')
 
