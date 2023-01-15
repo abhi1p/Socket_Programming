@@ -11,7 +11,7 @@ from PyQt5.QtCore import QRunnable, QObject, pyqtSignal
 
 from customWidgets import Dialog
 from gui import Ui_MainWindow
-
+import traceback
 
 class Signals(QObject):
     finished = pyqtSignal(tuple)
@@ -227,6 +227,12 @@ class MyApp(QMainWindow, Ui_MainWindow):
             if not self.exitApp:
                 self.receiveHandshake()
             self.soc4.close()
+        except Exception as e:
+            # Get the traceback as a string
+            tb_str = traceback.format_exception(etype=type(e), value=e, tb=e.__traceback__)
+            # Extract the line number from the traceback string
+            line_number = int(tb_str[-2].split(',')[1])
+            print(f'Error occurred on line {line_number}')
 
     def startReceiving(self):
         worker = Worker(self.receive)
@@ -317,6 +323,12 @@ class MyApp(QMainWindow, Ui_MainWindow):
         except socket.timeout:
             print("Discovery response timeout")
             self.noResponseSignal.emit()
+        except Exception as e:
+            # Get the traceback as a string
+            tb_str = traceback.format_exception(etype=type(e), value=e, tb=e.__traceback__)
+            # Extract the line number from the traceback string
+            line_number = int(tb_str[-2].split(',')[1])
+            print(f'Error occurred on line {line_number}')
 
     def startDiscover(self):
         self.worker = Worker(self.discover)
@@ -381,6 +393,12 @@ class MyApp(QMainWindow, Ui_MainWindow):
             except socket.timeout:
                 self.notDiscoveredSignal.emit()
                 break
+            except Exception as e:
+                # Get the traceback as a string
+                tb_str = traceback.format_exception(etype=type(e), value=e, tb=e.__traceback__)
+                # Extract the line number from the traceback string
+                line_number = int(tb_str[-2].split(',')[1])
+                print(f'Error occurred on line {line_number}')
 
     def timeOverflow(self):
         print("overflowed")
