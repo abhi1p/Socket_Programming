@@ -41,7 +41,7 @@ class Worker(QRunnable):
 
 
 class MyApp(QMainWindow, Ui_MainWindow):
-    start = pyqtSignal()
+    # start = pyqtSignal()
     discoveredSignal = pyqtSignal()
     notDiscoveredSignal = pyqtSignal()
     startDiscoveryResponseSignal = pyqtSignal()
@@ -52,9 +52,7 @@ class MyApp(QMainWindow, Ui_MainWindow):
     def __init__(self):
         super(MyApp, self).__init__()
         self.path = []
-        self.sock1 = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         self.sock2 = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-        self.soc4 = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.soc3 = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.application_id = "APP1"
         self.setupUi(self)
@@ -81,7 +79,7 @@ class MyApp(QMainWindow, Ui_MainWindow):
         self.discoverBtn.clicked.connect(self.startDiscover)
         self.allowDiscoveryCheckbox.stateChanged.connect(self.setAllowDiscovery)
         self.sendBtn.clicked.connect(self.sendFileSelect)
-        self.start.connect(self.getResponseAfterDiscoveryBroadcastStart)
+        # self.start.connect(self.getResponseAfterDiscoveryBroadcastStart)
         self.discoveredSignal.connect(self.discovered)
         self.notDiscoveredSignal.connect(self.notDiscovered)
         self.startDiscoveryResponseSignal.connect(self.DiscoveryResponse)
@@ -211,6 +209,7 @@ class MyApp(QMainWindow, Ui_MainWindow):
 
     def receiveHandshakeStart(self):
         # ip = self.discoveredDevices[-1][1][0]
+        self.soc4 = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.soc4.bind((self.selfIP, self.bind_port))
         self.soc4.settimeout(2)
         self.soc4.listen(1)
@@ -233,7 +232,7 @@ class MyApp(QMainWindow, Ui_MainWindow):
             # print("timeout")
             if not self.exitApp:
                 self.receiveHandshake()
-            # self.soc4.close()
+            self.soc4.close()
         except Exception as e:
             # Get the traceback as a string
             tb_str = traceback.format_exception(*sys.exc_info())
@@ -348,8 +347,9 @@ class MyApp(QMainWindow, Ui_MainWindow):
         # sending discovery request and discovery response are mutually exclusive
         if not self.allowDiscovery:
             # Create a UDP socket
+            self.sock1 = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
             # Allow reuse of the socket
-            self.sock1.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+            # self.sock1.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
             # Set the socket to allow broadcast packets
             self.sock1.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1)
 
@@ -365,12 +365,12 @@ class MyApp(QMainWindow, Ui_MainWindow):
             # self.start.emit()
             self.getResponseAfterDiscoveryBroadcast()
 
-    def getResponseAfterDiscoveryBroadcastStart(self):  # get device details after sending discovery request
-        self.worker = Worker(self.getResponseAfterDiscoveryBroadcast)
-        # self.worker.signals.finished.connect(self.discovered)
-        self.threadpool.start(self.worker)
-        # self.message_box.append("Started receiving")
-        self.messageDisplay.append("Started receiving")
+    # def getResponseAfterDiscoveryBroadcastStart(self):  # get device details after sending discovery request
+    #     self.worker = Worker(self.getResponseAfterDiscoveryBroadcast)
+    #     # self.worker.signals.finished.connect(self.discovered)
+    #     self.threadpool.start(self.worker)
+    #     # self.message_box.append("Started receiving")
+    #     self.messageDisplay.append("Started receiving")
 
     def getResponseAfterDiscoveryBroadcast(self):
         # Receive responses from other devices on the network
@@ -389,6 +389,7 @@ class MyApp(QMainWindow, Ui_MainWindow):
                 if res[0] == "Hello, I am device" and addr[0] != self.selfIP:
                     self.discoveredDevices.append((res[1], addr))
                     self.discoveredSignal.emit()
+                    self.sock1.close()
                     break
                 # if addr[0] != socket.gethostbyname(socket.gethostname()):
                 #     # if addr[0] != "192.168.247.1":
@@ -401,6 +402,7 @@ class MyApp(QMainWindow, Ui_MainWindow):
                 #     break
             except socket.timeout:
                 self.notDiscoveredSignal.emit()
+                self.sock1.close()
                 break
             except Exception as e:
                 # Get the traceback as a string
