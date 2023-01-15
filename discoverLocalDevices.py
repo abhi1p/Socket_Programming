@@ -178,10 +178,10 @@ class MyApp(QMainWindow, Ui_MainWindow):
             self.messageDisplay.append("File transfer started")
             self.send()
             print("File transfer started")
-            self.soc3.close()
+            # self.soc3.close()
         elif command == "File_transfer_Reject":
             self.messageDisplay.append("File transfer rejected")
-            self.soc3.close()
+            # self.soc3.close()
 
     # print(temp.__sizeof__())
     # self.soc3.send(.encode())
@@ -238,8 +238,8 @@ class MyApp(QMainWindow, Ui_MainWindow):
             tb_str = traceback.format_exception(*sys.exc_info())
             # Extract the line number from the traceback string
             print(tb_str)
-            # line_number = tb_str[-2].split(',')[1]
-            # print(f'Error occurred on line {line_number}')
+            line_number = tb_str[-2].split(',')[1]
+            print(f'Error occurred on line {line_number}')
 
     def startReceiving(self):
         worker = Worker(self.receive)
@@ -335,8 +335,8 @@ class MyApp(QMainWindow, Ui_MainWindow):
             tb_str = traceback.format_exception(*sys.exc_info())
             # Extract the line number from the traceback string
             print(tb_str)
-            # line_number = tb_str[-2].split(',')[1]
-            # print(f'Error occurred on line {line_number}')
+            line_number = tb_str[-2].split(',')[1]
+            print(f'Error occurred on line {line_number}')
 
     def startDiscover(self):
         self.worker = Worker(self.discover)
