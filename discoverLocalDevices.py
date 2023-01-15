@@ -71,7 +71,8 @@ class MyApp(QMainWindow, Ui_MainWindow):
         self.startDiscoveryResponseSignal.connect(self.DiscoveryResponse)
         self.noResponseSignal.connect(self.noResponse)
         self.startReceivingCapability.connect(self.startReceiveHandshake)
-        self.transferDialog.startBtn.clicked.connect(self.startTransfer)
+        self.transferDialog.startBtnClicked.connect(self.startTransfer)
+        self.transferDialog.cancelBtnClicked.connect(self.cancelTransfer)
         # self.transferDialog.
 
     # def initUI(self):
@@ -182,6 +183,9 @@ class MyApp(QMainWindow, Ui_MainWindow):
 
     def startTransfer(self):
         print("startTransfer")
+
+    def cancelTransfer(self):
+        print("cancelTransfer")
 
     def set_application_id(self, text):
         self.application_id = text
@@ -311,7 +315,7 @@ class MyApp(QMainWindow, Ui_MainWindow):
         # self.connected_device.setText(deviceName)
         self.coonectedDeviceDisplay.setText(deviceName)
         self.connected = True
-        # self.startReceivingCapability.emit()
+        self.startReceivingCapability.emit()
 
     def notDiscovered(self):
         self.messageDisplay.append("Not discovered any device")
