@@ -166,6 +166,7 @@ class MyApp(QMainWindow, Ui_MainWindow):
         try:
             self.soc3.connect(self.discoveredDevices[-1][1])
             self.connected = True
+            self.messageDisplay.append("Connected to " + self.discoveredDevices[-1][1][0])
         except Exception as e:
             print(e)
         except socket.timeout:
