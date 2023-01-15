@@ -36,8 +36,8 @@ class Worker(QRunnable):
             tb_str = traceback.format_exception(*sys.exc_info())
             # Extract the line number from the traceback string
             print(tb_str)
-            # line_number = tb_str[-2].split(',')[1]
-            # print(f'Error occurred on line {line_number}')
+            line_number = tb_str[-2].split(',')[1]
+            print(f'Error occurred on line {line_number}')
 
 
 class MyApp(QMainWindow, Ui_MainWindow):
@@ -74,6 +74,7 @@ class MyApp(QMainWindow, Ui_MainWindow):
         self.exitApp = False
         self.fileRecvCount = 0
         self.recvDirectory = "E:/Development/Socket_Programming/Recv/"
+        self.selfIP = socket.gethostbyname(socket.gethostname())
 
         self.appIdInput.setPlaceholderText("Enter application ID (default: APP1)")
         self.appIdInput.textChanged.connect(self.set_application_id)
@@ -210,7 +211,7 @@ class MyApp(QMainWindow, Ui_MainWindow):
 
     def receiveHandshakeStart(self):
         # ip = self.discoveredDevices[-1][1][0]
-        self.soc4.bind((socket.gethostbyname(socket.gethostname()), self.bind_port))
+        self.soc4.bind((self.selfIP, self.bind_port))
         self.soc4.settimeout(2)
         self.soc4.listen(1)
         self.receiveHandshake()
@@ -353,7 +354,7 @@ class MyApp(QMainWindow, Ui_MainWindow):
             self.sock1.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1)
 
             # Bind the socket to the local IP address and a port
-            self.sock1.bind((socket.gethostbyname(socket.gethostname()), self.bind_port))
+            self.sock1.bind((self.selfIP, self.bind_port))
             # Set a timeout so the socket does not block indefinitely when trying to receive data.
             self.sock1.settimeout(2)
 
@@ -385,7 +386,7 @@ class MyApp(QMainWindow, Ui_MainWindow):
                 data = data.decode()
                 res = data.split(":")
                 # print("Received message ", res)
-                if res[0] == "Hello, I am device" and addr[0] != socket.gethostbyname(socket.gethostname()):
+                if res[0] == "Hello, I am device" and addr[0] != self.selfIP:
                     self.discoveredDevices.append((res[1], addr))
                     self.discoveredSignal.emit()
                     break
