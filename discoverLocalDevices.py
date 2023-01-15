@@ -74,7 +74,7 @@ class MyApp(QMainWindow, Ui_MainWindow):
         self.transferDialog = Dialog(self)
         self.exitApp = False
         self.fileRecvCount = "0"
-        self.recvDirectory = "E:/Development/Socket_Programming/Recv/"
+        self.recvDirectory = "./"
         self.selfIP = socket.gethostbyname(socket.gethostname())
 
         self.appIdInput.setPlaceholderText("Enter application ID (default: APP1)")
