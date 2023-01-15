@@ -62,7 +62,7 @@ class MyApp(QMainWindow, Ui_MainWindow):
         self.discoveredDevices = []
         self.discovery = False
         self.connected = False
-        self.bind_port = 5000
+        self.bind_port = 5356
         self.data_transfer_port = 5355
         self.receiveStart = QTimer()
         # self.receiveStart.timeout.connect(self.timeOverflow)
@@ -166,7 +166,7 @@ class MyApp(QMainWindow, Ui_MainWindow):
 
     def establishConnection(self):
         try:
-            self.soc3.connect(self.discoveredDevices[-1][1][0], self.data_transfer_port)
+            self.soc3.connect((self.discoveredDevices[-1][1][0], self.data_transfer_port))
             self.connected = True
             self.messageDisplay.append("Connected to " + self.discoveredDevices[-1][1][0])
         except Exception as e:
@@ -207,8 +207,8 @@ class MyApp(QMainWindow, Ui_MainWindow):
     def sendFile(self, file):
         size = os.path.getsize(file)
         fileName = file.split("/")[-1]
-        self.soc3.senda(fileName.encode())  # send file name
-        self.soc3.senda(str(size).encode())  # send file size
+        self.soc3.send(fileName.encode())  # send file name
+        self.soc3.send(str(size).encode())  # send file size
         with open(file, "rb") as f:
             c = 0
             while c <= size:
@@ -471,8 +471,8 @@ class MyApp(QMainWindow, Ui_MainWindow):
         self.exitApp = True
         try:
             self.recvFile_conn.close()
-        except:
-            pass
+        except Exception as e:
+            print(e)
 
         # self.sock1.close()
         # self.sock2.close()
