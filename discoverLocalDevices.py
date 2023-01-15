@@ -151,6 +151,10 @@ class MyApp(QMainWindow, Ui_MainWindow):
         # self.soc3.send(.encode())
 
     def startReceiveHandshake(self):
+        worker = Worker(self.receiveHandshake)
+        self.threadpool.start(worker)
+
+    def receiveHandshake(self):
         print("startReceiveHandshake")
         self.soc4 = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         # ip = self.discoveredDevices[-1][1][0]
@@ -288,7 +292,7 @@ class MyApp(QMainWindow, Ui_MainWindow):
         print("Device name: ", deviceName)
         # self.connected_device.setText(deviceName)
         self.coonectedDeviceDisplay.setText(deviceName)
-        self.startReceivingCapability.emit()
+        # self.startReceivingCapability.emit()
 
     def notDiscovered(self):
         self.messageDisplay.append("Not discovered any device")
