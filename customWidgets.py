@@ -20,7 +20,7 @@ class Dialog(QDialog, Ui_transferDialog):
 
     def cancel(self):
         self.cancelBtnClicked.emit()
-        self.rejected()
+        self.reject()
 
 
 if __name__ == '__main__':
