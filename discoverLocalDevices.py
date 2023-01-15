@@ -46,7 +46,8 @@ class MyApp(QMainWindow, Ui_MainWindow):
     notDiscoveredSignal = pyqtSignal()
     startDiscoveryResponseSignal = pyqtSignal()
     noResponseSignal = pyqtSignal()
-    startReceivingCapability = pyqtSignal()
+    startReceivingCapability1 = pyqtSignal()
+    startReceivingCapability2 = pyqtSignal()
     incomingTransfer = pyqtSignal()
     establishConnectionStart = pyqtSignal()
 
@@ -86,7 +87,8 @@ class MyApp(QMainWindow, Ui_MainWindow):
         self.notDiscoveredSignal.connect(self.notDiscovered)
         self.startDiscoveryResponseSignal.connect(self.DiscoveryResponse)
         self.noResponseSignal.connect(self.noResponse)
-        self.startReceivingCapability.connect(self.receiveHandshake)
+        self.startReceivingCapability1.connect(self.receiveHandshakeStart)
+        self.startReceivingCapability2.connect(self.startReceiveHandshake)
         self.transferDialog.startBtnClicked.connect(self.startReceiving)
         self.transferDialog.cancelBtnClicked.connect(self.cancelTransferStart)
         self.incomingTransfer.connect(lambda: self.transferDialog.exec_())
@@ -217,17 +219,17 @@ class MyApp(QMainWindow, Ui_MainWindow):
                 c += len(data)
 
     def startReceiveHandshake(self):
-        worker = Worker(self.receiveHandshakeStart)
-        self.threadpool.start(worker)
-
-    def receiveHandshakeStart(self):
         # ip = self.discoveredDevices[-1][1][0]
         self.soc4 = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.soc4.bind((self.selfIP, self.bind_port))
         self.soc4.settimeout(2)
         self.soc4.listen(1)
         self.establishConnectionStart.emit()
-        self.receiveHandshake()
+        self.receiveHandshakeStart()
+
+    def receiveHandshakeStart(self):
+        worker = Worker(self.receiveHandshake)
+        self.threadpool.start(worker)
 
     def receiveHandshake(self):
         # print("startReceiveHandshake")
@@ -308,7 +310,7 @@ class MyApp(QMainWindow, Ui_MainWindow):
 
     def cancelTransfer(self):
         self.recvFile_conn.sendall("File_transfer_Reject".encode())
-        self.startReceivingCapability.emit()
+        self.startReceivingCapability1.emit()
 
     def set_application_id(self, text):
         self.application_id = text
@@ -441,7 +443,7 @@ class MyApp(QMainWindow, Ui_MainWindow):
         # self.connected_device.setText(deviceName)
         self.coonectedDeviceDisplay.setText(deviceName)
         self.discovery = True
-        self.startReceivingCapability.emit()
+        self.startReceivingCapability2.emit()
 
     def notDiscovered(self):
         self.messageDisplay.append("Not discovered any device")
