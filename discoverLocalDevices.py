@@ -48,6 +48,7 @@ class MyApp(QMainWindow, Ui_MainWindow):
     noResponseSignal = pyqtSignal()
     startReceivingCapability = pyqtSignal()
     incomingTransfer = pyqtSignal()
+    establishConnectionStart = pyqtSignal
 
     def __init__(self):
         super(MyApp, self).__init__()
@@ -58,6 +59,7 @@ class MyApp(QMainWindow, Ui_MainWindow):
         self.setupUi(self)
         # self.initUI()
         self.discoveredDevices = []
+        self.discovery = False
         self.connected = False
         self.bind_port = 5355
         self.data_transfer_port = 5356
@@ -88,6 +90,7 @@ class MyApp(QMainWindow, Ui_MainWindow):
         self.transferDialog.startBtnClicked.connect(self.startReceiving)
         self.transferDialog.cancelBtnClicked.connect(self.cancelTransferStart)
         self.incomingTransfer.connect(lambda: self.transferDialog.exec_())
+        self.establishConnectionStart.connect(self.establishConnection)
         # self.transferDialog.
 
     # def initUI(self):
@@ -137,7 +140,7 @@ class MyApp(QMainWindow, Ui_MainWindow):
             self.allowDiscovery = False
 
     def sendFileSelect(self):
-        if self.connected:
+        if self.discovery and self.connected:
             fileDialog = QFileDialog()
             fileDialog.setFileMode(QFileDialog.AnyFile)
             self.path = fileDialog.getOpenFileNames(self, "Select one or more files to send", "", "All Files (*)")
@@ -159,28 +162,37 @@ class MyApp(QMainWindow, Ui_MainWindow):
         print("sendFileStart")
         self.startSendHandshake(fileNames)
 
+    def establishConnection(self):
+        try:
+            self.soc3.connect(self.discoveredDevices[-1][1])
+            self.connected = True
+        except Exception as e:
+            print(e)
+        except socket.timeout:
+            print("Connection timed out")
+            self.messageDisplay.append("Connection timed out")
+
     def startSendHandshake(self, fileNames):
         print("startHandshake")
-        self.soc3.connect(self.discoveredDevices[-1][1])
-
-        command1 = "File_transfer_request"
-        command2 = f":{len(fileNames)}:"
-        command3 = ";".join(fileNames)
-        command = command1 + command2 + command3
-        print("command: ", command)
-        temp = command.encode()
-        self.soc3.sendall(temp)
-        command = self.soc3.recv(1024).decode()
-        # cmd1, fileCount, temp = command.split(":")
-        # fileNames = temp.split(";")
-        if command == "File_transfer_Accepted":
-            self.messageDisplay.append("File transfer started")
-            self.send()
-            print("File transfer started")
-            # self.soc3.close()
-        elif command == "File_transfer_Reject":
-            self.messageDisplay.append("File transfer rejected")
-            # self.soc3.close()
+        if self.connected:
+            command1 = "File_transfer_request"
+            command2 = f":{len(fileNames)}:"
+            command3 = ";".join(fileNames)
+            command = command1 + command2 + command3
+            print("command: ", command)
+            temp = command.encode()
+            self.soc3.sendall(temp)
+            command = self.soc3.recv(1024).decode()
+            # cmd1, fileCount, temp = command.split(":")
+            # fileNames = temp.split(";")
+            if command == "File_transfer_Accepted":
+                self.messageDisplay.append("File transfer started")
+                self.send()
+                print("File transfer started")
+                # self.soc3.close()
+            elif command == "File_transfer_Reject":
+                self.messageDisplay.append("File transfer rejected")
+                # self.soc3.close()
 
     # print(temp.__sizeof__())
     # self.soc3.send(.encode())
@@ -213,6 +225,7 @@ class MyApp(QMainWindow, Ui_MainWindow):
         self.soc4.bind((self.selfIP, self.bind_port))
         self.soc4.settimeout(2)
         self.soc4.listen(1)
+        self.establishConnectionStart.emit()
         self.receiveHandshake()
 
     def receiveHandshake(self):
@@ -426,7 +439,7 @@ class MyApp(QMainWindow, Ui_MainWindow):
         print("Device name: ", deviceName)
         # self.connected_device.setText(deviceName)
         self.coonectedDeviceDisplay.setText(deviceName)
-        self.connected = True
+        self.discovery = True
         self.startReceivingCapability.emit()
 
     def notDiscovered(self):
