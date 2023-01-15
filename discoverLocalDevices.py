@@ -466,8 +466,8 @@ class MyApp(QMainWindow, Ui_MainWindow):
         # self.sock2.close()
         # self.soc3.close()
         # self.soc4.close()
-        self.recvFile_conn.close()
-        self.threadpool.waitForDone()
+        # self.recvFile_conn.close()
+        # self.threadpool.waitForDone()
         self.threadpool.clear()
         self.close()
 
