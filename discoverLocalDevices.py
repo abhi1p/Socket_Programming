@@ -48,7 +48,7 @@ class MyApp(QMainWindow, Ui_MainWindow):
     noResponseSignal = pyqtSignal()
     startReceivingCapability = pyqtSignal()
     incomingTransfer = pyqtSignal()
-    establishConnectionStart = pyqtSignal
+    establishConnectionStart = pyqtSignal()
 
     def __init__(self):
         super(MyApp, self).__init__()
@@ -86,7 +86,7 @@ class MyApp(QMainWindow, Ui_MainWindow):
         self.notDiscoveredSignal.connect(self.notDiscovered)
         self.startDiscoveryResponseSignal.connect(self.DiscoveryResponse)
         self.noResponseSignal.connect(self.noResponse)
-        self.startReceivingCapability.connect(self.startReceiveHandshake)
+        self.startReceivingCapability.connect(self.receiveHandshake)
         self.transferDialog.startBtnClicked.connect(self.startReceiving)
         self.transferDialog.cancelBtnClicked.connect(self.cancelTransferStart)
         self.incomingTransfer.connect(lambda: self.transferDialog.exec_())
