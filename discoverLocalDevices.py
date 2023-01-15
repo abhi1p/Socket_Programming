@@ -59,6 +59,7 @@ class MyApp(QMainWindow, Ui_MainWindow):
         self.threadpool = QThreadPool()
         self.allowDiscovery = False
         self.transferDialog = Dialog(self)
+        self.exitApp = False
 
         self.appIdInput.setPlaceholderText("Enter application ID (default: APP1)")
         self.appIdInput.textChanged.connect(self.set_application_id)
@@ -166,20 +167,27 @@ class MyApp(QMainWindow, Ui_MainWindow):
 
     def receiveHandshake(self):
         print("startReceiveHandshake")
-        self.soc4 = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        # ip = self.discoveredDevices[-1][1][0]
-        self.soc4.bind((socket.gethostbyname(socket.gethostname()), self.bind_port))
-        self.soc4.listen(1)
-        conn, addr = self.soc4.accept()
-        command = conn.recv(1024).decode()
-        cmd1, fileCount, temp = command.split(":")
-        fileNames = temp.split(";")
-        if cmd1 == "File_transfer_request":
-            print("command: ", command)
-            for i in fileNames:
-                self.transferDialog.incomingTransferList.addItem(i)
-            self.incomingTransfer.emit()
-        self.soc4.close()
+        try:
+            self.soc4 = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+            # ip = self.discoveredDevices[-1][1][0]
+            self.soc4.bind((socket.gethostbyname(socket.gethostname()), self.bind_port))
+            self.soc4.settimeout(2)
+            self.soc4.listen(1)
+            conn, addr = self.soc4.accept()
+            command = conn.recv(1024).decode()
+            cmd1, fileCount, temp = command.split(":")
+            fileNames = temp.split(";")
+            if cmd1 == "File_transfer_request":
+                print("command: ", command)
+                for i in fileNames:
+                    self.transferDialog.incomingTransferList.addItem(i)
+                self.incomingTransfer.emit()
+            self.soc4.close()
+        except socket.timeout:
+            print("timeout")
+            if not self.exitApp:
+                self.startReceiveHandshake()
+            self.soc4.close()
 
     def startTransfer(self):
         # get selected files from transferDialog
@@ -338,6 +346,7 @@ class MyApp(QMainWindow, Ui_MainWindow):
 
     def closeEvent(self, a0: QtGui.QCloseEvent) -> None:
         # self.sock.close()
+        self.exitApp = True
         self.threadpool.waitForDone()
         self.threadpool.clear()
         self.close()
