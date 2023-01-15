@@ -37,6 +37,7 @@ class MyApp(QMainWindow, Ui_MainWindow):
     notDiscoveredSignal = pyqtSignal()
     startDiscoveryResponseSignal = pyqtSignal()
     noResponseSignal = pyqtSignal()
+    startReceivingCapability = pyqtSignal()
 
     def __init__(self):
         super(MyApp, self).__init__()
@@ -65,6 +66,7 @@ class MyApp(QMainWindow, Ui_MainWindow):
         self.notDiscoveredSignal.connect(self.notDiscovered)
         self.startDiscoveryResponseSignal.connect(self.DiscoveryResponse)
         self.noResponseSignal.connect(self.noResponse)
+        self.startReceivingCapability.connect(self.startReceiveHandshake)
 
     # def initUI(self):
     #     self.setWindowTitle("SMS1")
@@ -123,21 +125,29 @@ class MyApp(QMainWindow, Ui_MainWindow):
                 temp = i.split("/")
                 print(temp[-1])
                 fileNames.append(temp[-1])
-            # self.sendFileWorkerStart(fileNames)
+            self.sendFileWorkerStart(fileNames)
 
     def sendFileWorkerStart(self, fileNames):
-        worker = Worker(self.sendFileStart, fileNames)
-        self.threadpool.start(worker)
+        self.worker = Worker(self.sendFileStart, fileNames)
+        self.threadpool.start(self.worker)
 
     def sendFileStart(self, fileNames):
         print("sendFileStart")
         self.startSendHandshake(fileNames)
 
-    def startSendHandshake(self,fileNames):
+    def startSendHandshake(self, fileNames):
         print("startHandshake")
         self.soc3 = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.soc3.connect(self.discoveredDevices[-1][1])
-        command = "File transfer request"
+
+        command1 = "File_transfer_request"
+        command2 = f":{len(fileNames)}:"
+        command3 = ";".join(fileNames)
+        command = command1 + command2 + command3
+        print("command: ", command)
+        temp = command.encode()
+        self.soc3.sendall(temp)
+        # print(temp.__sizeof__())
         # self.soc3.send(.encode())
 
     def startReceiveHandshake(self):
@@ -146,6 +156,9 @@ class MyApp(QMainWindow, Ui_MainWindow):
         self.soc4.bind(self.discoveredDevices[-1][1])
         self.soc4.listen(1)
         conn, addr = self.soc4.accept()
+        command = conn.recv(1024).decode()
+        print("command: ", command)
+        self.soc4.close()
 
     def set_application_id(self, text):
         self.application_id = text
@@ -274,6 +287,7 @@ class MyApp(QMainWindow, Ui_MainWindow):
         print("Device name: ", deviceName)
         # self.connected_device.setText(deviceName)
         self.coonectedDeviceDisplay.setText(deviceName)
+        self.startReceivingCapability.emit()
 
     def notDiscovered(self):
         self.messageDisplay.append("Not discovered any device")
