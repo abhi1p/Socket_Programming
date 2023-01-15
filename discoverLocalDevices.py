@@ -315,8 +315,9 @@ class MyApp(QMainWindow, Ui_MainWindow):
         self.threadpool.start(worker)
 
     def cancelTransfer(self):
-        self.recvFile_conn.sendall("File_transfer_Reject".encode())
-        self.startReceivingCapability1.emit()
+        self.recvFile_conn.send("File_transfer_Reject".encode())
+        self.receiveHandshake()
+        # self.startReceivingCapability1.emit()
 
     def set_application_id(self, text):
         self.application_id = text
