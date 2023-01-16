@@ -1,6 +1,7 @@
 import os
 import socket
 import sys
+import time
 
 from PyQt5 import QtGui
 from PyQt5.QtCore import pyqtSignal, QThreadPool, QTimer
@@ -259,6 +260,7 @@ class MyApp(QMainWindow, Ui_MainWindow):
         if ack == "ACK":
             with open(file, "rb") as f:
                 c = 0
+                t1 = time.time()
                 while c < size:
                     data = f.read(1024)
                     # if not data:
@@ -267,6 +269,8 @@ class MyApp(QMainWindow, Ui_MainWindow):
                     c += len(data)
                     self.transferProgress.emit(c)
                     print("Sent: ", c)
+                t2 = time.time()
+                self.messageDisplay.append("Transfer speed: " + str(size / (t2 - t1)) + " Bytes/sec")
 
     def startReceiveHandshake(self):
         # ip = self.discoveredDevices[-1][1][0]
@@ -364,6 +368,7 @@ class MyApp(QMainWindow, Ui_MainWindow):
         # print("fileSize: ", fileSize)
         with open(self.recvDirectory + fileName, "wb") as f:
             c = 0
+            t1 = time.time()
             while c < fileSize:
                 data = self.recvFile_conn.recv(1024)
                 # if not data:
@@ -372,6 +377,9 @@ class MyApp(QMainWindow, Ui_MainWindow):
                 c += len(data)
                 # print("Received: ", c)
                 self.transferProgress.emit(c)
+            t2 = time.time()
+            self.messageDisplay.append("Transfer speed: " + str(fileSize / (t2 - t1)) + " Bytes/sec")
+
         # print("After transfer")
 
     # def replyWithTransferList(self, fileNames):
