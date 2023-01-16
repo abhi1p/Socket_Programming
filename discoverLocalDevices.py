@@ -59,7 +59,6 @@ class MyApp(QMainWindow, Ui_MainWindow):
     def __init__(self):
         super(MyApp, self).__init__()
         self.path = []
-        self.sock2 = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         self.soc3 = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.application_id = "APP1"
         self.threadpool = QThreadPool()
@@ -403,11 +402,12 @@ class MyApp(QMainWindow, Ui_MainWindow):
 
     def startDiscoveryResponse(self):
         # Allow reuse of the socket
-        self.sock2.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+        # self.sock2.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
         # Set the socket to allow broadcast packets
+        self.sock2 = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         self.sock2.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1)
         # Bind the socket to the local IP address and the same port as the broadcast packet
-        self.sock2.bind(("0.0.0.0", self.bind_port))
+        self.sock2.bind((self.selfIP, self.bind_port))
         self.sock2.settimeout(self.timeOutDuration)
         # Receive broadcast packet
         try:
@@ -421,6 +421,7 @@ class MyApp(QMainWindow, Ui_MainWindow):
                 device = msg[1]
                 self.discoveredDevices.append((device, addr))
                 print("Discovered device: ", addr)
+                self.sock2.close()
                 self.discoveredSignal.emit()
         except socket.timeout:
             print("Discovery response timeout")
@@ -444,12 +445,12 @@ class MyApp(QMainWindow, Ui_MainWindow):
             # Create a UDP socket
             self.sock1 = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
             # Allow reuse of the socket
-            self.sock1.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+            # self.sock1.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
             # Set the socket to allow broadcast packets
             self.sock1.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1)
 
             # Bind the socket to the local IP address and a port
-            self.sock1.bind(("0.0.0.0", self.bind_port))
+            self.sock1.bind((self.selfIP, self.bind_port))
             # Set a timeout so the socket does not block indefinitely when trying to receive data.
             self.sock1.settimeout(self.timeOutDuration)
 
