@@ -406,7 +406,7 @@ class MyApp(QMainWindow, Ui_MainWindow):
         # Set the socket to allow broadcast packets
         self.sock2.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1)
         # Bind the socket to the local IP address and the same port as the broadcast packet
-        self.sock2.bind(("", self.bind_port))
+        self.sock2.bind((self.selfIP, self.bind_port))
         self.sock2.settimeout(5)
         # Receive broadcast packet
         try:
