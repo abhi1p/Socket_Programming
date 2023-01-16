@@ -320,7 +320,7 @@ class MyApp(QMainWindow, Ui_MainWindow):
                 f.write(data)
                 c += len(data)
                 print("Received: ", c)
-
+        print("After transfer")
     # def replyWithTransferList(self, fileNames):
     #     command1 = "File_transfer_Accepted"
     #     # command2 = f":{len(fileNames)}:"
