@@ -90,7 +90,7 @@ class MyApp(QMainWindow, Ui_MainWindow):
         self.notDiscoveredSignal.connect(self.notDiscovered)
         self.startDiscoveryResponseSignal.connect(self.DiscoveryResponse)
         self.noResponseSignal.connect(self.noResponse)
-        self.startReceivingCapability1.connect(self.receiveHandshake)
+        self.startReceivingCapability1.connect(self.receiveHanshakeStart)
         self.startReceivingCapability2.connect(self.startReceiveHandshake)
         self.transferDialog.startBtnClicked.connect(self.startReceiving)
         self.transferDialog.cancelBtnClicked.connect(self.cancelTransferStart)
@@ -243,7 +243,7 @@ class MyApp(QMainWindow, Ui_MainWindow):
 
     def receiveHandshakeStart2(self):
         self.acceptConnection()
-        self.receiveHandshake()
+        self.receiveHanshakeStart()
 
     def acceptConnection(self):
         try:
@@ -260,6 +260,10 @@ class MyApp(QMainWindow, Ui_MainWindow):
             print(tb_str)
             line_number = tb_str[-2].split(',')[1]
             print(f'Error occurred on line {line_number}')
+
+    def receiveHanshakeStart(self):
+        worker = Worker(self.receiveHandshake)
+        self.threadpool.start(worker)
 
     def receiveHandshake(self):
         # print("startReceiveHandshake")
@@ -324,6 +328,7 @@ class MyApp(QMainWindow, Ui_MainWindow):
                 c += len(data)
                 print("Received: ", c)
         print("After transfer")
+
     # def replyWithTransferList(self, fileNames):
     #     command1 = "File_transfer_Accepted"
     #     # command2 = f":{len(fileNames)}:"
@@ -338,8 +343,8 @@ class MyApp(QMainWindow, Ui_MainWindow):
 
     def cancelTransfer(self):
         self.recvFile_conn.send("File_transfer_Reject".encode())
-        self.receiveHandshake()
-        # self.startReceivingCapability1.emit()
+        # self.receiveHandshake()
+        self.startReceivingCapability1.emit()
 
     def set_application_id(self, text):
         self.application_id = text
