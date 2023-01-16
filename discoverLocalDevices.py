@@ -218,7 +218,7 @@ class MyApp(QMainWindow, Ui_MainWindow):
         if ack == "ACK":
             with open(file, "rb") as f:
                 c = 0
-                while c <= size:
+                while c < size:
                     data = f.read(1024)
                     if not data:
                         break
@@ -313,7 +313,7 @@ class MyApp(QMainWindow, Ui_MainWindow):
         print("fileSize: ", fileSize)
         with open(self.recvDirectory + fileName, "wb") as f:
             c = 0
-            while c <= fileSize:
+            while c < fileSize:
                 data = self.recvFile_conn.recv(1024)
                 if not data:
                     break
