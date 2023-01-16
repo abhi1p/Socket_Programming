@@ -197,8 +197,6 @@ class MyApp(QMainWindow, Ui_MainWindow):
                 self.messageDisplay.append("File transfer rejected")
                 # self.soc3.close()
 
-    # print(temp.__sizeof__())
-    # self.soc3.send(.encode())
     def send(self):
         print("send")
         for file in self.path[0]:
@@ -209,14 +207,16 @@ class MyApp(QMainWindow, Ui_MainWindow):
         fileName = file.split("/")[-1]
         self.soc3.send(fileName.encode())  # send file name
         self.soc3.send(str(size).encode())  # send file size
-        with open(file, "rb") as f:
-            c = 0
-            while c <= size:
-                data = f.read(1024)
-                if not data:
-                    break
-                self.soc3.sendall(data)
-                c += len(data)
+        ack = self.soc3.recv(1024).decode()  # wait for acknowledgement
+        if ack == "ACK":
+            with open(file, "rb") as f:
+                c = 0
+                while c <= size:
+                    data = f.read(1024)
+                    if not data:
+                        break
+                    self.soc3.sendall(data)
+                    c += len(data)
 
     def startReceiveHandshake(self):
         # ip = self.discoveredDevices[-1][1][0]
@@ -298,6 +298,7 @@ class MyApp(QMainWindow, Ui_MainWindow):
     def receiveFile(self):
         fileName = self.recvFile_conn.recv(1024).decode()
         fileSize = int(self.recvFile_conn.recv(1024).decode())
+        self.recvFile_conn.sendall("ACK".encode())
         print("fileName: ", fileName)
         print("fileSize: ", fileSize)
         with open(self.recvDirectory + fileName, "wb") as f:
