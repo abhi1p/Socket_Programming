@@ -344,7 +344,7 @@ class MyApp(QMainWindow, Ui_MainWindow):
 
     def receive(self):
         self.recvFile_conn.sendall("File_transfer_Accepted".encode())
-        print("startTransfer")
+        # print("startTransfer")
         self.messageDisplay.append("File transfer started")
         for i in range(int(self.fileRecvCount)):
             self.receiveFile()
@@ -353,14 +353,14 @@ class MyApp(QMainWindow, Ui_MainWindow):
         self.startReceivingCapability1.emit()
 
     def receiveFile(self):
-        print("In receiveFile")
+        # print("In receiveFile")
         fileName = self.recvFile_conn.recv(1024).decode()
         self.recvFile_conn.sendall("ACK".encode())
         fileSize = int(self.recvFile_conn.recv(1024).decode())
         self.fileSize = fileSize
         self.recvFile_conn.sendall("ACK".encode())
-        print("fileName: ", fileName)
-        print("fileSize: ", fileSize)
+        # print("fileName: ", fileName)
+        # print("fileSize: ", fileSize)
         with open(self.recvDirectory + fileName, "wb") as f:
             c = 0
             while c < fileSize:
@@ -369,9 +369,9 @@ class MyApp(QMainWindow, Ui_MainWindow):
                     break
                 f.write(data)
                 c += len(data)
-                print("Received: ", c)
+                # print("Received: ", c)
                 self.transferProgress.emit(c)
-        print("After transfer")
+        # print("After transfer")
 
     # def replyWithTransferList(self, fileNames):
     #     command1 = "File_transfer_Accepted"
