@@ -82,6 +82,7 @@ class MyApp(QMainWindow, Ui_MainWindow):
         self.recvDirectory = "./"
         self.selfIP = socket.gethostbyname(socket.gethostname())
         self.fileSize = 1
+        self.timeOutDuration = 10
 
         self.appIdInput.setPlaceholderText("Enter application ID (default: APP1)")
         self.appIdInput.textChanged.connect(self.set_application_id)
@@ -406,8 +407,8 @@ class MyApp(QMainWindow, Ui_MainWindow):
         # Set the socket to allow broadcast packets
         self.sock2.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1)
         # Bind the socket to the local IP address and the same port as the broadcast packet
-        self.sock2.bind((self.selfIP, self.bind_port))
-        self.sock2.settimeout(5)
+        self.sock2.bind(("0.0.0.0", self.bind_port))
+        self.sock2.settimeout(self.timeOutDuration)
         # Receive broadcast packet
         try:
             data, addr = self.sock2.recvfrom(1024)
@@ -448,9 +449,9 @@ class MyApp(QMainWindow, Ui_MainWindow):
             self.sock1.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1)
 
             # Bind the socket to the local IP address and a port
-            self.sock1.bind((self.selfIP, self.bind_port))
+            self.sock1.bind(("0.0.0.0", self.bind_port))
             # Set a timeout so the socket does not block indefinitely when trying to receive data.
-            self.sock1.settimeout(2)
+            self.sock1.settimeout(self.timeOutDuration)
 
             msg = "Hello, network! from:" + self.application_id
             msg = msg.encode()
