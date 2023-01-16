@@ -31,6 +31,9 @@ class Worker(QRunnable):
         try:
             result = self.fun(*self.args, **self.kwargs)
             # self.signals.finished.emit(result)
+        except socket.error as e:
+            print(e)
+            print("Connrction Aborted")
         except Exception as e:
             # Get the traceback as a string
             tb_str = traceback.format_exception(*sys.exc_info())
@@ -191,7 +194,7 @@ class MyApp(QMainWindow, Ui_MainWindow):
             if command == "File_transfer_Accepted":
                 self.messageDisplay.append("File transfer started")
                 self.send()
-                print("File transfer started")
+                print("File transfer competed")
                 # self.soc3.close()
             elif command == "File_transfer_Reject":
                 self.messageDisplay.append("File transfer rejected")
@@ -206,8 +209,11 @@ class MyApp(QMainWindow, Ui_MainWindow):
         size = os.path.getsize(file)
         fileName = file.split("/")[-1]
         self.soc3.send(fileName.encode())  # send file name
-        self.soc3.send(str(size).encode())  # send file size
         ack = self.soc3.recv(1024).decode()  # wait for acknowledgement
+        if ack == "ACK":
+            self.soc3.send(str(size).encode())  # send file size
+        ack = self.soc3.recv(1024).decode()  # wait for acknowledgement
+        print("File info sent")
         print("Ack: ", ack)
         if ack == "ACK":
             with open(file, "rb") as f:
@@ -218,6 +224,7 @@ class MyApp(QMainWindow, Ui_MainWindow):
                         break
                     self.soc3.send(data)
                     c += len(data)
+                    print("Sent: ", c)
 
     def startReceiveHandshake(self):
         # ip = self.discoveredDevices[-1][1][0]
@@ -297,7 +304,9 @@ class MyApp(QMainWindow, Ui_MainWindow):
         self.messageDisplay.append("File transfer completed")
 
     def receiveFile(self):
+        print("In receiveFile")
         fileName = self.recvFile_conn.recv(1024).decode()
+        self.recvFile_conn.sendall("ACK".encode())
         fileSize = int(self.recvFile_conn.recv(1024).decode())
         self.recvFile_conn.sendall("ACK".encode())
         print("fileName: ", fileName)
@@ -310,6 +319,7 @@ class MyApp(QMainWindow, Ui_MainWindow):
                     break
                 f.write(data)
                 c += len(data)
+                print("Received: ", c)
 
     # def replyWithTransferList(self, fileNames):
     #     command1 = "File_transfer_Accepted"
