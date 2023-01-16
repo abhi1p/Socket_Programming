@@ -270,7 +270,7 @@ class MyApp(QMainWindow, Ui_MainWindow):
                     self.transferProgress.emit(c)
                     print("Sent: ", c)
                 t2 = time.time()
-                self.messageDisplay.append("Transfer speed: " + str(size / (t2 - t1)) + " Bytes/sec")
+                self.messageDisplay.append("Transfer speed: " + str((size / (t2 - t1))/(2**20)) + " MB/sec")
 
     def startReceiveHandshake(self):
         # ip = self.discoveredDevices[-1][1][0]
@@ -383,7 +383,7 @@ class MyApp(QMainWindow, Ui_MainWindow):
                 # print("Received: ", c)
                 self.transferProgress.emit(c)
             t2 = time.time()
-            self.messageDisplay.append("Transfer speed: " + str(fileSize / (t2 - t1)) + " Bytes/sec")
+            self.messageDisplay.append("Transfer speed: " + str((fileSize / (t2 - t1))/(2**20)) + " MB/sec")
 
         # print("After transfer")
 
