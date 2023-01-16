@@ -372,7 +372,8 @@ class MyApp(QMainWindow, Ui_MainWindow):
         self.recvFile_conn.sendall("ACK".encode())
         # print("fileName: ", fileName)
         # print("fileSize: ", fileSize)
-        with open(self.recvDirectory + fileName, "wb") as f:
+        dir = "/".join(self.recvDirectory, fileName)
+        with open(dir, "wb") as f:
             c = 0
             t1 = time.time()
             while c < fileSize:
