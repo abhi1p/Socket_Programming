@@ -208,6 +208,7 @@ class MyApp(QMainWindow, Ui_MainWindow):
         self.soc3.send(fileName.encode())  # send file name
         self.soc3.send(str(size).encode())  # send file size
         ack = self.soc3.recv(1024).decode()  # wait for acknowledgement
+        print("Ack: ", ack)
         if ack == "ACK":
             with open(file, "rb") as f:
                 c = 0
@@ -215,7 +216,7 @@ class MyApp(QMainWindow, Ui_MainWindow):
                     data = f.read(1024)
                     if not data:
                         break
-                    self.soc3.sendall(data)
+                    self.soc3.send(data)
                     c += len(data)
 
     def startReceiveHandshake(self):
