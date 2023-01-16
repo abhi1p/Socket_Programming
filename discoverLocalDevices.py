@@ -269,7 +269,7 @@ class MyApp(QMainWindow, Ui_MainWindow):
                     self.soc3.send(data)
                     c += len(data)
                     self.transferProgress.emit(c)
-                    print("Sent: ", c)
+                    # print("Sent: ", c)
                 t2 = time.time()
                 self.messageDisplay.append("Transfer speed: " + str((size / (t2 - t1)) / (2 ** 20)) + " MB/sec")
 
