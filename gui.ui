@@ -17,20 +17,66 @@
    <layout class="QVBoxLayout" name="verticalLayout">
     <item>
      <layout class="QGridLayout" name="gridLayout">
-      <item row="0" column="0">
-       <widget class="QLabel" name="appIdLabel">
+      <item row="4" column="2">
+       <widget class="QPushButton" name="discoverBtn">
         <property name="text">
-         <string>App Id</string>
+         <string>Discover</string>
         </property>
        </widget>
       </item>
+      <item row="7" column="0" colspan="3">
+       <widget class="QTextEdit" name="messageDisplay"/>
+      </item>
       <item row="0" column="1" colspan="2">
        <widget class="QLineEdit" name="appIdInput"/>
+      </item>
+      <item row="3" column="0">
+       <widget class="QLabel" name="coonnectedIPLabel">
+        <property name="text">
+         <string>Coonected IP</string>
+        </property>
+       </widget>
+      </item>
+      <item row="5" column="2">
+       <widget class="QPushButton" name="sendBtn">
+        <property name="text">
+         <string>Send</string>
+        </property>
+       </widget>
+      </item>
+      <item row="6" column="0" colspan="3">
+       <widget class="QProgressBar" name="transferProgressBar">
+        <property name="value">
+         <number>24</number>
+        </property>
+        <property name="alignment">
+         <set>Qt::AlignCenter</set>
+        </property>
+        <property name="textVisible">
+         <bool>true</bool>
+        </property>
+        <property name="invertedAppearance">
+         <bool>false</bool>
+        </property>
+        <property name="textDirection">
+         <enum>QProgressBar::BottomToTop</enum>
+        </property>
+       </widget>
       </item>
       <item row="1" column="0">
        <widget class="QLabel" name="connectedDeviceLabel">
         <property name="text">
          <string>Connected Device</string>
+        </property>
+       </widget>
+      </item>
+      <item row="5" column="0" colspan="2">
+       <widget class="QListWidget" name="selectedFileListWidget"/>
+      </item>
+      <item row="0" column="0">
+       <widget class="QLabel" name="appIdLabel">
+        <property name="text">
+         <string>App Id</string>
         </property>
        </widget>
       </item>
@@ -41,32 +87,32 @@
         </property>
        </widget>
       </item>
-      <item row="2" column="0" colspan="2">
+      <item row="3" column="1" colspan="2">
+       <widget class="QLineEdit" name="coonectedIPInput">
+        <property name="autoFillBackground">
+         <bool>false</bool>
+        </property>
+        <property name="clearButtonEnabled">
+         <bool>false</bool>
+        </property>
+       </widget>
+      </item>
+      <item row="4" column="0">
        <widget class="QCheckBox" name="allowDiscoveryCheckbox">
         <property name="text">
          <string>Allow Discovery</string>
         </property>
        </widget>
       </item>
-      <item row="2" column="2">
-       <widget class="QPushButton" name="discoverBtn">
+      <item row="4" column="1">
+       <widget class="QCheckBox" name="autoCheckBox">
         <property name="text">
-         <string>Discover</string>
+         <string>Auto</string>
+        </property>
+        <property name="checked">
+         <bool>false</bool>
         </property>
        </widget>
-      </item>
-      <item row="3" column="2">
-       <widget class="QPushButton" name="sendBtn">
-        <property name="text">
-         <string>Send</string>
-        </property>
-       </widget>
-      </item>
-      <item row="4" column="0" colspan="3">
-       <widget class="QTextEdit" name="messageDisplay"/>
-      </item>
-      <item row="3" column="0" colspan="2">
-       <widget class="QListWidget" name="selectedFileListWidget"/>
       </item>
      </layout>
     </item>

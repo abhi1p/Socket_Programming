@@ -53,6 +53,8 @@ class MyApp(QMainWindow, Ui_MainWindow):
     startReceivingCapability2 = pyqtSignal()
     incomingTransfer = pyqtSignal()
     establishConnectionStart = pyqtSignal()
+    transferProgress = pyqtSignal(int)
+    startManualConnection = pyqtSignal()
 
     def __init__(self):
         super(MyApp, self).__init__()
@@ -60,6 +62,7 @@ class MyApp(QMainWindow, Ui_MainWindow):
         self.sock2 = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         self.soc3 = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.application_id = "APP1"
+        self.threadpool = QThreadPool()
         self.setupUi(self)
         # self.initUI()
         self.discoveredDevices = []
@@ -72,13 +75,13 @@ class MyApp(QMainWindow, Ui_MainWindow):
         self.receiveStart.setSingleShot(True)
         self.overflow = False
         self.overflowDuration = 5000
-        self.threadpool = QThreadPool()
         self.allowDiscovery = False
         self.transferDialog = Dialog(self)
         self.exitApp = False
         self.fileRecvCount = "0"
         self.recvDirectory = "./"
         self.selfIP = socket.gethostbyname(socket.gethostname())
+        self.fileSize = 1
 
         self.appIdInput.setPlaceholderText("Enter application ID (default: APP1)")
         self.appIdInput.textChanged.connect(self.set_application_id)
@@ -96,6 +99,11 @@ class MyApp(QMainWindow, Ui_MainWindow):
         self.transferDialog.cancelBtnClicked.connect(self.cancelTransferStart)
         self.incomingTransfer.connect(lambda: self.transferDialog.exec_())
         self.establishConnectionStart.connect(self.establishConnection)
+        self.autoCheckBox.stateChanged.connect(self.setAuto)
+        self.setAuto()
+        self.transferProgress.connect(self.setTransferProgress)
+        self.setTransferProgress(0)
+        self.startManualConnection.connect(self.manualConnect)
         # self.transferDialog.
 
     # def initUI(self):
@@ -136,6 +144,24 @@ class MyApp(QMainWindow, Ui_MainWindow):
     #     self.setCentralWidget(self.centralWidget)
     #     self.start.connect(self.startReceiving)
     #     self.discover_button.clicked.connect(self.discover)
+    def setTransferProgress(self, value):
+        percent = (value / self.fileSize) * 100
+        self.transferProgressBar.setValue(int(percent))
+
+    def setAuto(self):
+        if self.autoCheckBox.isChecked():
+            # auto
+            # self.coonectedIPInput.setReadOnly(True)
+            self.coonectedIPInput.setDisabled(True)
+            self.discoverBtn.setText("Discover")
+
+        else:
+            # manual
+            # self.coonectedIPInput.setReadOnly(False)
+            # self.coonectedIPInput.setText("Testing")
+            self.coonectedIPInput.setDisabled(False)
+            self.discoverBtn.setText("Connect")
+            self.startReceivingCapability2.emit()
 
     def setAllowDiscovery(self):
         if self.allowDiscoveryCheckbox.isChecked():
@@ -166,6 +192,18 @@ class MyApp(QMainWindow, Ui_MainWindow):
     def sendFileStart(self, fileNames):
         print("sendFileStart")
         self.startSendHandshake(fileNames)
+
+    def manualConnect(self):
+        try:
+            ip = self.coonectedIPInput.text()
+            self.soc3.connect((ip, self.data_transfer_port))
+            self.connected = True
+            self.messageDisplay.append("Connected to " + ip)
+        except Exception as e:
+            print(e)
+        except socket.timeout:
+            print("Connection timed out")
+            self.messageDisplay.append("Connection timed out")
 
     def establishConnection(self):
         try:
@@ -227,6 +265,7 @@ class MyApp(QMainWindow, Ui_MainWindow):
                     self.soc3.send(data)
                     c += len(data)
                     print("Sent: ", c)
+                    self.transferProgress.emit(c)
 
     def startReceiveHandshake(self):
         # ip = self.discoveredDevices[-1][1][0]
@@ -234,20 +273,22 @@ class MyApp(QMainWindow, Ui_MainWindow):
         self.soc4.bind((self.selfIP, self.data_transfer_port))
         self.soc4.settimeout(2)
         self.soc4.listen(1)
-        self.establishConnectionStart.emit()
+        if self.autoCheckBox.isChecked():
+            self.establishConnectionStart.emit()
         self.receiveHandshakeStart1()
 
     def receiveHandshakeStart1(self):
-        worker = Worker(self.receiveHandshakeStart2)
+        worker = Worker(self.acceptConnection)
         self.threadpool.start(worker)
 
-    def receiveHandshakeStart2(self):
-        self.acceptConnection()
-        self.receiveHanshakeStart()
+    # def receiveHandshakeStart2(self):
+    #     self.acceptConnection()
+    #     self.receiveHanshakeStart()
 
     def acceptConnection(self):
         try:
             self.recvFile_conn, addr = self.soc4.accept()
+            self.startReceivingCapability1.emit()
         except socket.timeout:
             # print("timeout")
             if not self.exitApp:
@@ -309,12 +350,14 @@ class MyApp(QMainWindow, Ui_MainWindow):
             self.receiveFile()
         self.messageDisplay.append("File transfer completed")
         self.transferDialog.incomingTransferList.clear()
+        self.startReceivingCapability1.emit()
 
     def receiveFile(self):
         print("In receiveFile")
         fileName = self.recvFile_conn.recv(1024).decode()
         self.recvFile_conn.sendall("ACK".encode())
         fileSize = int(self.recvFile_conn.recv(1024).decode())
+        self.fileSize = fileSize
         self.recvFile_conn.sendall("ACK".encode())
         print("fileName: ", fileName)
         print("fileSize: ", fileSize)
@@ -327,6 +370,7 @@ class MyApp(QMainWindow, Ui_MainWindow):
                 f.write(data)
                 c += len(data)
                 print("Received: ", c)
+                self.transferProgress.emit(c)
         print("After transfer")
 
     # def replyWithTransferList(self, fileNames):
@@ -363,7 +407,7 @@ class MyApp(QMainWindow, Ui_MainWindow):
         self.sock2.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1)
         # Bind the socket to the local IP address and the same port as the broadcast packet
         self.sock2.bind(("", self.bind_port))
-        self.sock2.settimeout(3)
+        self.sock2.settimeout(5)
         # Receive broadcast packet
         try:
             data, addr = self.sock2.recvfrom(1024)
