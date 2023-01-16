@@ -264,8 +264,8 @@ class MyApp(QMainWindow, Ui_MainWindow):
                         break
                     self.soc3.send(data)
                     c += len(data)
-                    print("Sent: ", c)
                     self.transferProgress.emit(c)
+                    print("Sent: ", c)
 
     def startReceiveHandshake(self):
         # ip = self.discoveredDevices[-1][1][0]
