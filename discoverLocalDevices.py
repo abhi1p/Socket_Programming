@@ -421,6 +421,7 @@ class MyApp(QMainWindow, Ui_MainWindow):
         # Receive broadcast packet
         try:
             data, addr = self.sock2.recvfrom(1024)
+            print("Received broadcast packet from: ", addr)
             data = data.decode()
             msg = data.split(":")
             if msg[0] == "Hello, network! from":
@@ -488,7 +489,7 @@ class MyApp(QMainWindow, Ui_MainWindow):
             try:
                 data, addr = self.sock1.recvfrom(1024)
                 count += 1
-                # print("Received= ", addr[0])
+                print("Received= ", addr[0])
                 data = data.decode()
                 res = data.split(":")
                 # print("Received message ", res)
@@ -508,6 +509,7 @@ class MyApp(QMainWindow, Ui_MainWindow):
                 #     break
             except socket.timeout:
                 self.notDiscoveredSignal.emit()
+                print("Discovery request timeout")
                 self.sock1.close()
                 break
             except Exception as e:
