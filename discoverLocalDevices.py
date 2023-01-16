@@ -247,6 +247,7 @@ class MyApp(QMainWindow, Ui_MainWindow):
 
     def sendFile(self, file):
         size = os.path.getsize(file)
+        self.fileSize = size
         fileName = file.split("/")[-1]
         self.soc3.send(fileName.encode())  # send file name
         ack = self.soc3.recv(1024).decode()  # wait for acknowledgement
@@ -260,8 +261,8 @@ class MyApp(QMainWindow, Ui_MainWindow):
                 c = 0
                 while c < size:
                     data = f.read(1024)
-                    if not data:
-                        break
+                    # if not data:
+                    #     break
                     self.soc3.send(data)
                     c += len(data)
                     self.transferProgress.emit(c)
@@ -365,8 +366,8 @@ class MyApp(QMainWindow, Ui_MainWindow):
             c = 0
             while c < fileSize:
                 data = self.recvFile_conn.recv(1024)
-                if not data:
-                    break
+                # if not data:
+                #     break
                 f.write(data)
                 c += len(data)
                 # print("Received: ", c)
