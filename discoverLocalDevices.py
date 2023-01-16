@@ -195,6 +195,8 @@ class MyApp(QMainWindow, Ui_MainWindow):
                 self.messageDisplay.append("File transfer started")
                 self.send()
                 print("File transfer competed")
+                self.messageDisplay.append("File transfer completed")
+                self.selectedFileListWidget.clear()
                 # self.soc3.close()
             elif command == "File_transfer_Reject":
                 self.messageDisplay.append("File transfer rejected")
@@ -302,6 +304,7 @@ class MyApp(QMainWindow, Ui_MainWindow):
         for i in range(int(self.fileRecvCount)):
             self.receiveFile()
         self.messageDisplay.append("File transfer completed")
+        self.transferDialog.incomingTransferList.clear()
 
     def receiveFile(self):
         print("In receiveFile")
