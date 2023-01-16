@@ -456,8 +456,9 @@ class MyApp(QMainWindow, Ui_MainWindow):
 
             msg = "Hello, network! from:" + self.application_id
             msg = msg.encode()
+            broadcastip = self.selfIP[:self.selfIP.rfind('.') + 1] + '255'
             # Send a broadcast packet to the network
-            self.sock1.sendto(msg, ("<broadcast>", self.bind_port))
+            self.sock1.sendto(msg, (broadcastip, self.bind_port))
             # self.start.emit()
             self.getResponseAfterDiscoveryBroadcast()
 
