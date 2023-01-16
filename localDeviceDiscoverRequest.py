@@ -9,10 +9,10 @@ sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
 sock.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1)
 
 # Bind the socket to the local IP address and a port
-sock.bind(("192.168.1.116", 5001))
+sock.bind(("192.168.1.116", 52112))
 
 # Send a broadcast packet to the network
-sock.sendto(b"Hello, network!", ("192.168.1.255", 5001))
+sock.sendto(b"Hello, network!", ("192.168.1.255", 52112))
 
 # Receive responses from other devices on the network
 # while True:
