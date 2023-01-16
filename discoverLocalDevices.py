@@ -68,8 +68,8 @@ class MyApp(QMainWindow, Ui_MainWindow):
         self.discoveredDevices = []
         self.discovery = False
         self.connected = False
-        self.bind_port = 5356
-        self.data_transfer_port = 5355
+        self.bind_port = 5001
+        self.data_transfer_port = 5002
         self.receiveStart = QTimer()
         # self.receiveStart.timeout.connect(self.timeOverflow)
         self.receiveStart.setSingleShot(True)
